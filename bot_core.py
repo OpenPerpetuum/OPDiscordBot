@@ -20,7 +20,7 @@ def get_prefix(bot, message):
 extensions = ['cogs.perpetuum_killboard_cog']
 # The bot modules we wish to load. The dot represents folders.
 
-bot = commands.Bot(command_prefix=get_prefix, description='NetMarble Bot Test')
+bot = commands.Bot(command_prefix=get_prefix, description='Perpetuum Killboard Bot')
 
 for extension in extensions:
     try:

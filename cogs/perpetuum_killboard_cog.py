@@ -39,7 +39,7 @@ def get_last_kill_time():
     #  the current time minus an hour.
 
 
-class KillboardCog(commands.Cog):
+class Killboard(commands.Cog):
     """Prototype Perpetuum killboard cog"""
 
     def __init__(self, bot):
@@ -121,5 +121,5 @@ class KillboardCog(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(KillboardCog(bot))
+    bot.add_cog(Killboard(bot))
     print("Killboard cog loaded.")
