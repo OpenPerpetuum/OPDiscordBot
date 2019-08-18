@@ -1,8 +1,9 @@
 import discord
+import os
 from discord.ext import commands
 from bot_functions import load_config
 
-CONFIG_FILE = 'bot_config.json'
+CONFIG_FILE = os.path.join(os.path.abspath(os.curdir), 'bot_config.json')
 CONFIG_TOKEN = 'Bot Token'
 
 config_json = load_config(CONFIG_FILE)
