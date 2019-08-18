@@ -12,10 +12,12 @@ KILLBOARD_URL = 'https://killboard.openperpetuum.com/kill/'  # Initially placed 
 # be generated. However, the OP killboard page doesn't allow for direct linking.
 
 KILLBOARD_CONFIG = 'cogs/config/killboard_config.json'
+BOT_NAME_FILE = 'cogs/config/bot_definition_map.json'
 
 TIME_PARSE_STRING = '%Y-%m-%d %H:%M:%S'
 
 config_json = bot_functions.load_config(KILLBOARD_CONFIG)
+bot_name_lookup = bot_functions.load_config(BOT_NAME_FILE)
 
 # Defaults
 
@@ -33,7 +35,7 @@ def get_last_kill_time():
     global config_json  # Update the JSON in memory while we're reading the last time.
     config_json = bot_functions.load_config(KILLBOARD_CONFIG)
     if 'last_kill' in config_json:
-        return strptime(config_json['last_kill'], TIME_PARSE_STRING)
+        return strptime(config_json['last_kill']['date'], TIME_PARSE_STRING)
     else:
         return (datetime.now() - timedelta(hours=1)).timetuple()  # If there's no time in the config, default to
     #  the current time minus an hour.
@@ -70,6 +72,7 @@ class Killboard(commands.Cog):
             raw_data = requests.get(API_URL)
         except Exception as ex:
             print("Exception {0} occurred while trying to fetch killmails.".format(ex))
+            return
 
         if raw_data.status_code is not 200:  # If the API request was unsuccessful, stop.
             print("Status {0} returned while trying to fetch killmails.".format(raw_data.status_code))
@@ -84,31 +87,62 @@ class Killboard(commands.Cog):
             if currdate > last_kill_time:
                 new_killmails.append(raw_kill)
 
-        if len(new_killmails) == 0:  # If there's no new killmails
-            return  # Do nothing.
         print("Found {0} new killmails.".format(len(new_killmails)))
 
+        if len(new_killmails) == 0:  # If there's no new killmails
+            return  # Do nothing.
+
         with open(KILLBOARD_CONFIG, 'w') as config:  # Write the most recent timestamp to our file
-            config_json['last_kill'] = new_killmails[0]['date']
+            config_json['last_kill'] = {
+                "date": new_killmails[0]['date'],
+                "uid": new_killmails[0]['uid']
+            }
+
             config.write(json.dumps(config_json))
 
-        raw_kill_message = "Agent: {0}\n" \
+        raw_kill_message = "=============New Kill!================\n" \
+                           "Victim: {0}\n" \
                            "Zone: {1}\n" \
                            "Corporation: {2}\n" \
                            "Date: {3}\n" \
                            "Robot: {4}\n" \
                            "\n" \
-                           "Most damage: {5} dealt {6} damage in a {7}."
+                           "Attackers: \n{5}\n"
         for kill in new_killmails:
+            attackers_text = ""
+            for a in kill['_embedded']['attackers']:
+                attack_text = "Agent: {0}, Robot: {1}, Damage: {2}".format(
+                    a['_embedded']['agent']['name'],
+                    bot_name_lookup[a['_embedded']['robot']['definition']],
+                    a['damageDealt'],
+                )
+
+                if int(a['totalEcmAttempts']) > 0:
+                    attack_text += ", {}".format(
+                        a['totalEcmAttempts'],
+                    )
+                if int(a['sensorSuppressions']) > 0:
+                    attack_text += ", {}".format(
+                        a['sensorSuppressions'],
+                    )
+
+                if float(a['energyDispersed']) > 0:
+                    attack_text += ", {}".format(
+                        a['energyDispersed'],
+                    )
+
+                if a["hasKillingBlow"]:
+                    attack_text += " Killing Blow!"
+
+                attackers_text += attack_text + "\n"
+
             kill_message = raw_kill_message.format(
-                                                kill['_embedded']['agent']['name'],
-                                                kill['_embedded']['zone']['name'],
-                                                kill['_embedded']['corporation']['name'],
-                                                kill['date'],
-                                                kill['_embedded']['robot']['name'],
-                                                kill['_embedded']['attackers'][0]['_embedded']['agent']['name'],
-                                                kill['_embedded']['attackers'][0]['damageDealt'],
-                                                kill['_embedded']['attackers'][0]['_embedded']['robot']['name'])
+                kill['_embedded']['agent']['name'],
+                kill['_embedded']['zone']['name'],
+                kill['_embedded']['corporation']['name'],
+                kill['date'],
+                bot_name_lookup[kill['_embedded']['robot']['definition']],
+                attackers_text)
 
             for channel in channels:
                 await channel.send(kill_message)
