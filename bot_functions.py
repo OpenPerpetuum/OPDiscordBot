@@ -51,8 +51,8 @@ def find_members(search_query, member_list):
 
     for member in member_list:
         if str(search_query).lower() == str(member.name).lower() or \
-           str(search_query).lower() == str(member.nick).lower() or \
-           str(search_query).lower() == str(member.mention).lower():
+                str(search_query).lower() == str(member.nick).lower() or \
+                str(search_query).lower() == str(member.mention).lower():
             results.append(member)
 
     if len(results) is 0:

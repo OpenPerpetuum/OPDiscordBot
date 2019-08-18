@@ -10,7 +10,6 @@ TOKEN = config_json[CONFIG_TOKEN]  # Loads the bot's token from a configuration 
 
 
 def get_prefix(bot, message):
-
     prefixes = ['!']
 
     # If we are in a guild, we allow for the user to mention us or use any of the prefixes in our list.
@@ -36,4 +35,5 @@ async def on_ready():
     print(f'Successfully logged in and booted...!')
 
 
-bot.run(TOKEN, bot=True, reconnect=True)
+if __name__ == '__main__':
+    bot.run(TOKEN, bot=True, reconnect=True)
