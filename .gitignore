@@ -1,6 +1,6 @@
 #### Ignores for project specific files
 bot_config.json
-
+.idea/
 
 
 ####
