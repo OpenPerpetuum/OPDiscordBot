@@ -1,6 +1,7 @@
 from discord.ext import commands, tasks
 import requests
 import json
+import os
 import bot_functions
 from time import strptime
 from datetime import datetime, timedelta
@@ -10,7 +11,8 @@ API_URL = 'https://api.openperpetuum.com/killboard/kill?order-by[0][type]=field&
 
 KILLBOARD_URL = 'https://killboard.openperpetuum.com/kill/'  # Initially placed in because I thought that links could
 # be generated. However, the OP killboard page doesn't allow for direct linking.
-
+CONFIG_FILE = os.path.join(os.path.abspath(os.curdir), 'config/killboard_config.json')
+print(CONFIG_FILE)
 KILLBOARD_CONFIG = 'cogs/config/killboard_config.json'
 BOT_NAME_FILE = 'cogs/config/bot_definition_map.json'
 
