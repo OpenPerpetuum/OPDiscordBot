@@ -39,7 +39,7 @@ def get_last_kill_time():
     if 'last_kill' in config_json:
         return strptime(config_json['last_kill']['date'], TIME_PARSE_STRING)
     else:
-        return (datetime.now() - timedelta(hours=1)).timetuple()  # If there's no time in the config, default to
+        return (datetime.now() - timedelta(hours=96)).timetuple()  # If there's no time in the config, default to
     #  the current time minus an hour.
 
 
