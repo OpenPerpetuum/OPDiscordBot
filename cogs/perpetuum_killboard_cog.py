@@ -12,7 +12,6 @@ API_URL = 'https://api.openperpetuum.com/killboard/kill?order-by[0][type]=field&
 KILLBOARD_URL = 'https://killboard.openperpetuum.com/kill/'  # Initially placed in because I thought that links could
 # be generated. However, the OP killboard page doesn't allow for direct linking.
 CONFIG_FILE = os.path.join(os.path.abspath(os.curdir), 'config/killboard_config.json')
-print(CONFIG_FILE)
 KILLBOARD_CONFIG = 'cogs/config/killboard_config.json'
 BOT_NAME_FILE = 'cogs/config/bot_definition_map.json'
 
@@ -115,21 +114,21 @@ class Killboard(commands.Cog):
             for a in kill['_embedded']['attackers']:
                 attack_text = "Agent: {0}, Robot: {1}, Damage: {2}".format(
                     a['_embedded']['agent']['name'],
-                    bot_name_lookup[a['_embedded']['robot']['definition']],
+                    bot_name_lookup.get(a['_embedded']['robot']['definition'], a['_embedded']['robot']['definition']),
                     a['damageDealt'],
                 )
 
                 if int(a['totalEcmAttempts']) > 0:
-                    attack_text += ", {}".format(
+                    attack_text += ", {} ECM".format(
                         a['totalEcmAttempts'],
                     )
                 if int(a['sensorSuppressions']) > 0:
-                    attack_text += ", {}".format(
+                    attack_text += ", {} SS".format(
                         a['sensorSuppressions'],
                     )
 
                 if float(a['energyDispersed']) > 0:
-                    attack_text += ", {}".format(
+                    attack_text += ", {} Accum drained".format(
                         a['energyDispersed'],
                     )
 
@@ -143,7 +142,7 @@ class Killboard(commands.Cog):
                 kill['_embedded']['zone']['name'],
                 kill['_embedded']['corporation']['name'],
                 kill['date'],
-                bot_name_lookup[kill['_embedded']['robot']['definition']],
+                bot_name_lookup.get(kill['_embedded']['robot']['definition'], kill['_embedded']['robot']['definition']),
                 attackers_text)
 
             for channel in channels:

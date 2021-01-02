@@ -94,5 +94,11 @@
 	"def_daidalos_bot": "Daidalos",
 	"def_metis_bot": "Metis",
 	"def_arkhe2_bot_pink": "AnniversArkhe-Year0",
-	"def_AnniversArkhe_bot": "AnniversArkhe-Year1"
+	"def_AnniversArkhe_bot": "AnniversArkhe-Year1",
+	"def_felos_bot" : "Felos",
+	"def_felos_bot_pr" : "Felos prototype",
+	"def_hydra_bot" : "Hydra",
+	"def_hydra_bot_pr" : "Hydra prototype",
+	"def_onyx_bot" : "Onyx",
+	"def_onyx_bot_pr" : "Onyx prototype"
 }
