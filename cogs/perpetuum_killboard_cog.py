@@ -3,6 +3,7 @@ import requests
 import json
 import os
 import bot_functions
+import discord
 from time import strptime
 from datetime import datetime, timedelta
 
@@ -101,54 +102,83 @@ class Killboard(commands.Cog):
 
             config.write(json.dumps(config_json))
 
-        raw_kill_message = "=============New Kill!================\n" \
-                           "Victim: {0}\n" \
-                           "Zone: {1}\n" \
-                           "Corporation: {2}\n" \
-                           "Date: {3}\n" \
-                           "Robot: {4}\n" \
-                           "\n" \
-                           "Attackers: \n{5}\n"
+        # Iterate over Attacker(s)
         for kill in new_killmails:
-            attackers_text = ""
+            print("Building new kill-mail embed..." + str(len(new_killmails)))
+            # Embed Setup
+            killboard_url = "https://killboard.openperpetuum.com/kill/" + str(kill['id'])
+
+            kill_message_embed = discord.Embed(title="Killboard Link",
+                                               url=killboard_url,
+                                               color=discord.colour.Color.random())
+            kill_message_embed.set_author(name="Killmail #" + str(kill['id']),
+                                          url="https://api.openperpetuum.com/killboard/kill/" + str(kill['id']),
+                                          icon_url="http://clipart-library.com/img/831510.png")
+            kill_message_embed.set_thumbnail(
+                url="http://clipart-library.com/img/831510.png")  # TODO: Fetch Victims robot picture, or Corp icons?
+
+            kill_message_embed.set_footer(text="Happened on " + str(kill['date']))
+
+            # Embed - Victim
+            kill_message_embed.add_field(name="Victim",
+                                         value=str(kill['_embedded']['agent']['name']) +
+                                               "\nCorp: " + str(kill['_embedded']['corporation']['name']),
+                                         inline=True)
+
+            kill_message_embed.add_field(name="🤖 Robot",
+                                         value=bot_name_lookup.get(kill['_embedded']['robot']['definition']),
+                                         inline=True)
+
+            kill_message_embed.add_field(name="🗺️ Zone",
+                                         value=kill['_embedded']['zone']['name'],
+                                         inline=False)
+
+            kill_message_embed.add_field(name="🩹 Damage Taken",
+                                         value=kill['damageReceived'],
+                                         inline=True)
+
+            # Embed - Attacker(s)
             for a in kill['_embedded']['attackers']:
-                attack_text = "Agent: {0}, Robot: {1}, Damage: {2}".format(
-                    a['_embedded']['agent']['name'],
-                    bot_name_lookup.get(a['_embedded']['robot']['definition'], a['_embedded']['robot']['definition']),
-                    a['damageDealt'],
-                )
-
-                if int(a['totalEcmAttempts']) > 0:
-                    attack_text += ", {} ECM".format(
-                        a['totalEcmAttempts'],
-                    )
-                if int(a['sensorSuppressions']) > 0:
-                    attack_text += ", {} SS".format(
-                        a['sensorSuppressions'],
-                    )
-
-                if float(a['energyDispersed']) > 0:
-                    attack_text += ", {} Accum drained".format(
-                        a['energyDispersed'],
-                    )
 
                 if a["hasKillingBlow"]:
-                    attack_text += " Killing Blow!"
+                    kill_message_embed.add_field(name="⚔ Attacker - 🩸 Killing Blow! 🩸",
+                                                 value=a['_embedded']['agent']['name'] +
+                                                       "\nCorp: " + a['_embedded']['corporation']['name'],
+                                                 inline=False)
+                else:
+                    kill_message_embed.add_field(name="⚔ Attacker",
+                                                 value=a['_embedded']['agent']['name'] +
+                                                       "\nCorp: " + a['_embedded']['corporation']['name'],
+                                                 inline=False)
 
-                attackers_text += attack_text + "\n"
+                kill_message_embed.add_field(name="🤖 Robot",
+                                             value=bot_name_lookup.get(a['_embedded']['robot']['definition']),
+                                             inline=True)
 
-            kill_message = raw_kill_message.format(
-                kill['_embedded']['agent']['name'],
-                kill['_embedded']['zone']['name'],
-                kill['_embedded']['corporation']['name'],
-                kill['date'],
-                bot_name_lookup.get(kill['_embedded']['robot']['definition'], kill['_embedded']['robot']['definition']),
-                attackers_text)
+                kill_message_embed.add_field(name="🗡️ Damage dealt",
+                                             value=a['damageDealt'],
+                                             inline=True)
 
+                if int(a['totalEcmAttempts']) > 0:
+                    kill_message_embed.add_field(name="ECM Attempts",
+                                                 value=a['totalEcmAttempts'],
+                                                 inline=True)
+
+                if int(a['sensorSuppressions']) > 0:
+                    kill_message_embed.add_field(name="Sensor Supressions",
+                                                 value=a['sensorSuppressions'],
+                                                 inline=True)
+
+                if float(a['energyDispersed']) > 0:
+                    kill_message_embed.add_field(name="Accum Drained",
+                                                 value=a['energyDispersed'],
+                                                 inline=True)
+
+            print("Finished Building new kill-mail embed...")
             for channel in channels:
-                await channel.send(kill_message)
+                await channel.send(embed=kill_message_embed)
 
-        return
+            return
 
     @display_new_kills.before_loop  # Ensures the killmail checker doesn't run before the bot can post.
     async def before_killmails(self):
