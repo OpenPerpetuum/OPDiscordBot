@@ -128,7 +128,7 @@ class Killboard(commands.Cog):
             # Embed - Victim
             kill_message_embed.add_field(name="Victim",
                                          value=str(kill['_embedded']['agent']['name']) +
-                                               "\nCorp: " + str(kill['_embedded']['corporation']['name']),
+                                               "\n**Corp**: " + str(kill['_embedded']['corporation']['name']),
                                          inline=True)
 
             kill_message_embed.add_field(name="🤖 Robot",
@@ -153,12 +153,12 @@ class Killboard(commands.Cog):
                 if a["hasKillingBlow"]:
                     kill_message_embed.add_field(name="⚔ Attacker - 🩸 Killing Blow! 🩸",
                                                  value=a['_embedded']['agent']['name'] +
-                                                       "\nCorp: " + a['_embedded']['corporation']['name'],
+                                                       "\n**Corp**: " + a['_embedded']['corporation']['name'],
                                                  inline=False)
                 else:
                     kill_message_embed.add_field(name="⚔ Attacker",
                                                  value=a['_embedded']['agent']['name'] +
-                                                       "\nCorp: " + a['_embedded']['corporation']['name'],
+                                                       "\n**Corp**: " + a['_embedded']['corporation']['name'],
                                                  inline=False)
 
                 kill_message_embed.add_field(name="🤖 Robot",
