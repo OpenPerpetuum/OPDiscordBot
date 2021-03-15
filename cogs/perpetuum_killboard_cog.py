@@ -114,8 +114,8 @@ class Killboard(commands.Cog):
             kill_message_embed.set_author(name="Killmail #" + str(kill['id']),
                                           url="https://api.openperpetuum.com/killboard/kill/" + str(kill['id']),
                                           icon_url="http://clipart-library.com/img/831510.png")
-            kill_message_embed.set_thumbnail(
-                url="http://clipart-library.com/img/831510.png")  # TODO: Fetch Victims robot picture, or Corp icons?
+            # kill_message_embed.set_thumbnail(
+            #     url="http://clipart-library.com/img/831510.png")  # TODO: Fetch Victims robot picture, or Corp icons?
 
             kill_message_embed.set_footer(text="Happened on " + str(kill['date']))
 
