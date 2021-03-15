@@ -180,7 +180,7 @@ class Killboard(commands.Cog):
             for channel in channels:
                 await channel.send(embed=kill_message_embed)
 
-            return
+        return
 
     @display_new_kills.before_loop  # Ensures the killmail checker doesn't run before the bot can post.
     async def before_killmails(self):
