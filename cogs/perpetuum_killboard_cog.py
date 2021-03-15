@@ -116,7 +116,7 @@ class Killboard(commands.Cog):
                                                color=discord.colour.Color.random())
             kill_message_embed.set_author(name="Killmail #" + str(kill['id']),
                                           url="https://api.openperpetuum.com/killboard/kill/" + str(kill['id']),
-                                          icon_url="http://clipart-library.com/img/831510.png")
+                                          icon_url="http://clipart-library.com/img/831510.png") # TODO: Decide on icon
             # kill_message_embed.set_thumbnail(
             #     url="http://clipart-library.com/img/831510.png")  # TODO: Fetch Victims robot picture, or Corp icons?
 
