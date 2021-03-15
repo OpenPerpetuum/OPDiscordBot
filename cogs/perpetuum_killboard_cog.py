@@ -43,6 +43,12 @@ def get_last_kill_time():
     #  the current time minus an hour.
 
 
+def prettier_numbers(number: int):
+    x = str(number)
+    pretty = x.split('.')
+    return pretty[0]
+
+
 class Killboard(commands.Cog):
     """Prototype Perpetuum killboard cog"""
 
@@ -127,6 +133,10 @@ class Killboard(commands.Cog):
 
             kill_message_embed.add_field(name="🤖 Robot",
                                          value=bot_name_lookup.get(kill['_embedded']['robot']['definition']),
+                                         inline=False)
+
+            kill_message_embed.add_field(name="🩹 Damage Taken",
+                                         value=prettier_numbers(kill['damageReceived']),
                                          inline=True)
 
             kill_message_embed.add_field(name="🗺️ Zone",
@@ -156,7 +166,7 @@ class Killboard(commands.Cog):
                                              inline=True)
 
                 kill_message_embed.add_field(name="🗡️ Damage dealt",
-                                             value=a['damageDealt'],
+                                             value=prettier_numbers(a['damageDealt']),
                                              inline=True)
 
                 if int(a['totalEcmAttempts']) > 0:
