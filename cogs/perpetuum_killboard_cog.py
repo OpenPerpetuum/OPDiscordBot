@@ -174,7 +174,7 @@ class Killboard(commands.Cog):
 
                 if float(a['energyDispersed']) > 0:
                     kill_message_embed.add_field(name="Accum Drained",
-                                                 value=a['energyDispersed'],
+                                                 value=prettier_numbers(a['energyDispersed']),
                                                  inline=True)
 
             for channel in channels:
