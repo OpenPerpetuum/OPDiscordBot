@@ -141,6 +141,11 @@ class Killboard(commands.Cog):
                                          inline=True)
 
             # Embed - Attacker(s)
+            #TODO: Embeds has a hard-limit on 25 fields
+            # so if there is too many attackers or too many who did Drain/Supress/ECM
+            # We need to shorten the list of attackers and put something like "... More attackers, check killboard link"
+            # An example of this is with KillID: 2720
+            # More info on embed limits: https://discordjs.guide/popular-topics/embeds.html#embed-limits
             for a in kill['_embedded']['attackers']:
 
                 if a["hasKillingBlow"]:
