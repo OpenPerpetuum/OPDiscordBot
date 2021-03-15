@@ -82,7 +82,7 @@ class Killboard(commands.Cog):
             print("Exception {0} occurred while trying to fetch killmails.".format(ex))
             return
 
-        if raw_data.status_code is not 200:  # If the API request was unsuccessful, stop.
+        if raw_data.status_code != 200:  # If the API request was unsuccessful, stop.
             print("Status {0} returned while trying to fetch killmails.".format(raw_data.status_code))
             return
 
@@ -110,12 +110,9 @@ class Killboard(commands.Cog):
 
         # Iterate over Attacker(s)
         for kill in new_killmails:
-            print("Building new kill-mail embed..." + str(len(new_killmails)))
             # Embed Setup
-            killboard_url = "https://killboard.openperpetuum.com/kill/" + str(kill['id'])
-
             kill_message_embed = discord.Embed(title="Killboard Link",
-                                               url=killboard_url,
+                                               url="https://killboard.openperpetuum.com/kill/" + str(kill['id']),
                                                color=discord.colour.Color.random())
             kill_message_embed.set_author(name="Killmail #" + str(kill['id']),
                                           url="https://api.openperpetuum.com/killboard/kill/" + str(kill['id']),
@@ -180,7 +177,6 @@ class Killboard(commands.Cog):
                                                  value=a['energyDispersed'],
                                                  inline=True)
 
-            print("Finished Building new kill-mail embed...")
             for channel in channels:
                 await channel.send(embed=kill_message_embed)
 
