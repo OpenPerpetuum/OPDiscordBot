@@ -141,10 +141,6 @@ class Killboard(commands.Cog):
 
             kill_message_embed.add_field(name="🗺️ Zone",
                                          value=kill['_embedded']['zone']['name'],
-                                         inline=False)
-
-            kill_message_embed.add_field(name="🩹 Damage Taken",
-                                         value=kill['damageReceived'],
                                          inline=True)
 
             # Embed - Attacker(s)
