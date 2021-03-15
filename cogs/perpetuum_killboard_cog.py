@@ -108,7 +108,7 @@ class Killboard(commands.Cog):
 
             config.write(json.dumps(config_json))
 
-        # Iterate over Attacker(s)
+        # Iterate over each new killmail
         for kill in new_killmails:
             # Embed Setup
             kill_message_embed = discord.Embed(title="Killboard Link",
