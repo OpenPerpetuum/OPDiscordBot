@@ -161,10 +161,6 @@ class Killboard(commands.Cog):
 
         # Iterate over each new killmail
         for kill in new_killmails:
-            # Test
-            ijson = requests.get('https://api.openperpetuum.com/killboard/kill/2720')
-            kill = json.loads(ijson.content)
-
             # Embed Setup
             kill_message_embed = discord.Embed(title="Killboard Link",
                                                url="https://killboard.openperpetuum.com/kill/" + str(kill['id']),
@@ -196,10 +192,8 @@ class Killboard(commands.Cog):
                                          inline=True)
 
             # Embed - Attacker(s)
-            # TODO: Embeds has a hard-limit on 25 fields
-            # so if there is too many attackers or too many who did Drain/Supress/ECM
-            # We need to shorten the list of attackers and put something like "... More attackers, check killboard link"
-            # An example of this is with KillID: 2720
+            # Note that Discord Embeds has a hard-limit on 25 fields
+            # Killmail that would exceed that 25 limit: https://api.openperpetuum.com/killboard/kill/2720
             # More info on embed limits: https://discordjs.guide/popular-topics/embeds.html#embed-limits
 
             field_overflow: bool = False
@@ -207,7 +201,6 @@ class Killboard(commands.Cog):
 
             # Count the total amount of fields this Killmail would require
             for a in kill['_embedded']['attackers']:
-                print("Field Check Start - " + str(field_count))
                 field_count += 3  # At least we add 3 (Name, Robot, Damage as minimum)
                 if int(a['totalEcmAttempts']) > 0:
                     field_count += 1
@@ -215,15 +208,12 @@ class Killboard(commands.Cog):
                     field_count += 1
                 if float(a['energyDispersed']) > 0:
                     field_count += 1
-                print("Field Check End: - " + str(field_count))
             if (field_count > 25):
                 field_overflow = True
-                print("Found an Overflowing Kill ID: " + str(kill['id']))
                 field_count = 4  # Reset value to reuse while building overflow embed
 
             # Do condensed attacker list, if Embed Field Count would go above the 25 MAX limit
             if (field_overflow):
-                print("Entered FIELD OVERFLOW")
 
                 # Find Killing Blow and put them first on the embed
                 for a in kill['_embedded']['attackers']:
@@ -238,7 +228,6 @@ class Killboard(commands.Cog):
 
                         if float(a['energyDispersed']) > 0:
                             field_count += 1
-                        print("Added KB to embed, total fields: " + str(field_count))
 
                 # Used to check if we are trying to add the final attacker when we hit the MAX field count of 25
                 attacker_iteration: int = 1
@@ -258,31 +247,23 @@ class Killboard(commands.Cog):
                             fields_to_add += 1
                         if float(a['energyDispersed']) > 0:
                             fields_to_add += 1
-                        print("ATK Fields to add: " + str(fields_to_add))
 
                         temp_field_total = fields_to_add + field_count  # Would-be total if we added the above fields
 
-                        print("Temp Total Fields: " + str(temp_field_total))
-
                         # If we do not reach the Field Limit with this entry, then add this attacker to the embed
                         if (temp_field_total <= 24):
-                            print("RES: Less than 24, adding..")
                             add_attacker(kill_message_embed, a)
                             field_count = temp_field_total  # Save that we added new fields
-                            print("NEW TOTAL: " + str(field_count))
                             attacker_iteration += 1
 
                         # If adding this entry would set our Field total = 25 (MAX) or less,
                         # AND its the last attacker for the kill then we add it,
                         # otherwise build the "More attackers... See Killboard for details"
-                        elif temp_field_total <= 25 & attacker_iteration == len(kill)-1:
-                            print("RES: <= 25 AND last entry, adding...")
+                        elif temp_field_total <= 25 & attacker_iteration == len(kill) - 1:
                             add_attacker(kill_message_embed, a)
                             attacker_iteration += 1
 
                         else:
-                            print("RES: OVERFLOW! Field Count atm: " + str(field_count))
-                            print("RES: OVERFLOW! Too many attackers msg adding")
                             add_too_many_attackers(kill_message_embed)
                             break
             else:
@@ -302,7 +283,6 @@ class Killboard(commands.Cog):
 
             # Post the embed!
             for channel in channels:
-                print("-- POSTING EMBED MESSAGE --")
                 await channel.send(embed=kill_message_embed)
 
         return
