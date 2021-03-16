@@ -178,7 +178,7 @@ class Killboard(commands.Cog):
                                                  inline=True)
 
                 if float(a['energyDispersed']) > 0:
-                    kill_message_embed.add_field(name="Accum Drained",
+                    kill_message_embed.add_field(name="Energy Drained",
                                                  value=prettier_numbers(a['energyDispersed']),
                                                  inline=True)
 
