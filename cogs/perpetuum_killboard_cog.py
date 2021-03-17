@@ -91,6 +91,40 @@ def add_attacker(embed: discord.embeds, a: json):
     return embed
 
 
+def add_attacker_str(atk_saved_str: str, atk_to_add: json):
+
+    if atk_to_add["hasKillingBlow"]:
+        atk_saved_str = atk_saved_str + (
+                    "\n🕵️ **Agent**: " + str(atk_to_add['_embedded']['agent']['name']) + " - 🩸 Killing Blow! 🩸")
+    else:
+        atk_saved_str = atk_saved_str + ("\n🕵️ **Agent**: " + str(atk_to_add['_embedded']['agent']['name']))
+
+    atk_saved_str = atk_saved_str + ("\n💠 **Corp**: " + str(atk_to_add['_embedded']['corporation']['name']) +
+                           "\n🤖 **Robot**: " + bot_name_lookup.get(
+                atk_to_add['_embedded']['robot']['definition']) +
+                           "\n🗡️ **Damage dealt**: " + str(prettier_numbers(atk_to_add['damageDealt'])))
+
+    if int(atk_to_add['totalEcmAttempts']) > 0:
+        atk_saved_str = atk_saved_str + "\n**ECM Attempts**: " + str(atk_to_add['totalEcmAttempts'])
+
+    if int(atk_to_add['sensorSuppressions']) > 0:
+        atk_saved_str = atk_saved_str + "\n**Sensor Supressions**: " + str(atk_to_add['sensorSuppressions'])
+
+    if float(atk_to_add['energyDispersed']) > 0:
+        atk_saved_str = atk_saved_str + "\n**Energy Drained**: " + str(prettier_numbers(atk_to_add['energyDispersed']))
+
+    atk_saved_str = atk_saved_str + "\n "
+
+    return atk_saved_str
+
+def build_attacker_field(atkstr: str, embed: discord.embeds, atkfieldname: str):
+
+    embed.add_field(name=atkfieldname,
+                    value=str(atkstr),
+                    inline=False)
+
+
+
 def add_too_many_attackers(embed: discord.embeds):
     embed.add_field(name="Full Details",
                     value="Too many attackers to list, see the full details at the Killboard Link",
@@ -165,6 +199,7 @@ class Killboard(commands.Cog):
 
         # Iterate over each new killmail
         for kill in new_killmails:
+            print("-- Starting new killmail: " + str(kill['id']) + " --")
             # Embed Setup
             kill_message_embed = discord.Embed(title="Killboard Link",
                                                url="https://killboard.openperpetuum.com/kill/" + str(kill['id']),
@@ -193,90 +228,50 @@ class Killboard(commands.Cog):
             # Killmail that would exceed that 25 limit: https://api.openperpetuum.com/killboard/kill/2720
             # More info on embed limits: https://discordjs.guide/popular-topics/embeds.html#embed-limits
 
-            field_overflow: bool = False
-            field_count: int = 4  # We always start with 4 fields from the Victim section
+            # Setup for Attacker Field(s) for Embed
+            atk_field_name = "⚔ Attackers"
+            atkcount = (str(len(kill['_embedded']['attackers'])))
+            if (int(atkcount) <= 1): # If there's only 1 attacker, change field name to singular.
+                atk_field_name = "⚔ Attacker"
 
-            # Count the total amount of fields this Killmail would require
+            atk_saved_list = ""  # Validated Attackers, saved to a list - These WILL exist in the embed
+            current_atk_str = ""  # Validated Attackers + New Attacker we want to add - Check if this exceeds limits
+            current_field_length = 0  # Length of field we're currently manipulating
+            embed_length = len(kill_message_embed)  # Embed char length, MAX 6000
+
+            # Find Killing Blow and add to the list first
             for a in kill['_embedded']['attackers']:
-                field_count += 3  # At least we add 3 (Name, Robot, Damage as minimum)
-                if int(a['totalEcmAttempts']) > 0:
-                    field_count += 1
-                if int(a['sensorSuppressions']) > 0:
-                    field_count += 1
-                if float(a['energyDispersed']) > 0:
-                    field_count += 1
-            if (field_count > 25):
-                field_overflow = True
-                field_count = 4  # Reset value to reuse while building overflow embed
+                if a["hasKillingBlow"]:
+                    atk_saved_list = add_attacker_str(atk_saved_list, a)
+                    kill['_embedded']['attackers'].remove(a)  # Attacker has now been added, remove it from list
+                    break
 
-            # Do condensed attacker list, if Embed Field Count would go above the 25 MAX limit
-            if (field_overflow):
+            # Validate the rest of the attackers
+            for a in kill['_embedded']['attackers']:
+                current_atk_str = add_attacker_str(atk_saved_list, a) # Add a new Attackers info to the Saved list
+                embed_length = len(kill_message_embed)  # Update current embed length
+                new_length = len(current_atk_str) + embed_length
 
-                # Find Killing Blow and put them first on the embed
-                for a in kill['_embedded']['attackers']:
-                    if a["hasKillingBlow"]:
-                        add_attacker(kill_message_embed, a)
-                        field_count += 3  # At least we add 3 (Name, Robot, Damage as minimum)
-                        if int(a['totalEcmAttempts']) > 0:
-                            field_count += 1
-
-                        if int(a['sensorSuppressions']) > 0:
-                            field_count += 1
-
-                        if float(a['energyDispersed']) > 0:
-                            field_count += 1
-
-                # Used to check if we are trying to add the final attacker when we hit the MAX field count of 25
-                attacker_iteration: int = 1
-
-                # Build remaining attacker(s) embeds
-                for a in kill['_embedded']['attackers']:
-                    if a["hasKillingBlow"]:
-                        continue  # Do nothing, Killing Blow Attacker was already added earlier.
-                    else:
-                        # Count how many fields we want to add,
-                        # check against field_count to make sure it fits within <=25 max limit
-                        print("Attempting to add new attacker, Field count: " + str(field_count))
-                        fields_to_add: int = 3  # At least we add 3 (Name, Robot, Damage as minimum)
-                        if int(a['totalEcmAttempts']) > 0:
-                            fields_to_add += 1
-                        if int(a['sensorSuppressions']) > 0:
-                            fields_to_add += 1
-                        if float(a['energyDispersed']) > 0:
-                            fields_to_add += 1
-
-                        temp_field_total = fields_to_add + field_count  # Would-be total if we added the above fields
-
-                        # If we do not reach the Field Limit with this entry, then add this attacker to the embed
-                        if (temp_field_total <= 24):
-                            add_attacker(kill_message_embed, a)
-                            field_count = temp_field_total  # Save that we added new fields
-                            attacker_iteration += 1
-
-                        # If adding this entry would set our Field total = 25 (MAX) or less,
-                        # AND its the last attacker for the kill then we add it,
-                        # otherwise build the "More attackers... See Killboard for details"
-                        elif temp_field_total <= 25 & attacker_iteration == len(kill) - 1:
-                            add_attacker(kill_message_embed, a)
-                            attacker_iteration += 1
-
-                        else:
-                            add_too_many_attackers(kill_message_embed)
-                            break
-            else:
-                # This killmail requires less than 25 fields, so go ahead and add all of them
-
-                # Find Killing Blow and put them first on the embed
-                for a in kill['_embedded']['attackers']:
-                    if a["hasKillingBlow"]:
-                        add_attacker(kill_message_embed, a)
-
-                for a in kill['_embedded']['attackers']:
-
-                    if a["hasKillingBlow"]:
-                        continue  # Already added the Killing Blow Entry
-                    else:
-                        add_attacker(kill_message_embed, a)
+                if new_length >= 5900:  # Do we exceed the allowed Embed Length?
+                    # End early, build what we have and add 'too many attackers' field at the end of the embed
+                    build_attacker_field(atk_saved_list, kill_message_embed, atk_field_name)
+                    add_too_many_attackers(kill_message_embed) #Costs 1 field + ~85 characters
+                else:
+                    current_field_length = len(atk_saved_list)  # Update current field length
+                    new_field_length = current_field_length + len(current_atk_str)
+                    # If adding this attacker is still below field char limit
+                    if(new_field_length <= 1024):  #  Does adding this attacker exceed allowed Field char Length?
+                        atk_saved_list = current_atk_str #Add this attacker to the Saved List
+                        if a == kill['_embedded']['attackers'][-1]: # If this is the last Attacker to validate, build Embed
+                            build_attacker_field(atk_saved_list, kill_message_embed, atk_field_name)
+                    else:  # We exceeded the Field Length
+                        if len(kill_message_embed.fields) >= 23: # We exceeded the allowed amount of Fields
+                            add_too_many_attackers(kill_message_embed)  # Costs 1 field + ~85 characters
+                        else: # We still have Fields to use, finish this Field and build a new one!
+                            # Build field without adding latest attacker
+                            build_attacker_field(atk_saved_list, kill_message_embed, atk_field_name)
+                            atk_saved_list = ""  # Empty the list, since we just built a Full Field
+                            atk_saved_list = add_attacker_str(atk_saved_list, a)  # Add the attacker we just skipped
 
             # Post the embed!
             for channel in channels:
