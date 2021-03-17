@@ -92,17 +92,16 @@ def add_attacker(embed: discord.embeds, a: json):
 
 
 def add_attacker_str(atk_saved_str: str, atk_to_add: json):
-
     if atk_to_add["hasKillingBlow"]:
         atk_saved_str = atk_saved_str + (
-                    "\n🕵️ **Agent**: " + str(atk_to_add['_embedded']['agent']['name']) + " - 🩸 Killing Blow! 🩸")
+                "\n🕵️ **Agent**: " + str(atk_to_add['_embedded']['agent']['name']) + " - 🩸 Killing Blow! 🩸")
     else:
         atk_saved_str = atk_saved_str + ("\n🕵️ **Agent**: " + str(atk_to_add['_embedded']['agent']['name']))
 
     atk_saved_str = atk_saved_str + ("\n💠 **Corp**: " + str(atk_to_add['_embedded']['corporation']['name']) +
-                           "\n🤖 **Robot**: " + bot_name_lookup.get(
+                                     "\n🤖 **Robot**: " + bot_name_lookup.get(
                 atk_to_add['_embedded']['robot']['definition']) +
-                           "\n🗡️ **Damage dealt**: " + str(prettier_numbers(atk_to_add['damageDealt'])))
+                                     "\n🗡️ **Damage dealt**: " + str(prettier_numbers(atk_to_add['damageDealt'])))
 
     if int(atk_to_add['totalEcmAttempts']) > 0:
         atk_saved_str = atk_saved_str + "\n**ECM Attempts**: " + str(atk_to_add['totalEcmAttempts'])
@@ -117,12 +116,11 @@ def add_attacker_str(atk_saved_str: str, atk_to_add: json):
 
     return atk_saved_str
 
-def build_attacker_field(atkstr: str, embed: discord.embeds, atkfieldname: str):
 
+def build_attacker_field(atkstr: str, embed: discord.embeds, atkfieldname: str):
     embed.add_field(name=atkfieldname,
                     value=str(atkstr),
-                    inline=False)
-
+                    inline=True)
 
 
 def add_too_many_attackers(embed: discord.embeds):
@@ -133,7 +131,7 @@ def add_too_many_attackers(embed: discord.embeds):
 
 
 def embed_linebreak():
-    return "\n ──────────────────── "
+    return "\n ──────────── "
 
 
 # endregion Helper functions
@@ -199,7 +197,7 @@ class Killboard(commands.Cog):
 
         # Iterate over each new killmail
         for kill in new_killmails:
-            print("-- Starting new killmail: " + str(kill['id']) + " --")
+
             # Embed Setup
             kill_message_embed = discord.Embed(title="Killboard Link",
                                                url="https://killboard.openperpetuum.com/kill/" + str(kill['id']),
@@ -221,7 +219,7 @@ class Killboard(commands.Cog):
                                                "\n🩹 **Damage Taken**: " + prettier_numbers(kill['damageReceived']) +
                                                "\n🗺️ **Zone**: " + str(
                                              kill['_embedded']['zone']['name']) + embed_linebreak(),
-                                         inline=True)
+                                         inline=False)
 
             # Embed - Attacker(s)
             # Note that Discord Embeds has a hard-limit on 25 fields
@@ -231,13 +229,15 @@ class Killboard(commands.Cog):
             # Setup for Attacker Field(s) for Embed
             atk_field_name = "⚔ Attackers"
             atkcount = (str(len(kill['_embedded']['attackers'])))
-            if (int(atkcount) <= 1): # If there's only 1 attacker, change field name to singular.
+            if (int(atkcount) <= 1):  # If there's only 1 attacker, change field name to singular.
                 atk_field_name = "⚔ Attacker"
 
             atk_saved_list = ""  # Validated Attackers, saved to a list - These WILL exist in the embed
             current_atk_str = ""  # Validated Attackers + New Attacker we want to add - Check if this exceeds limits
             current_field_length = 0  # Length of field we're currently manipulating
             embed_length = len(kill_message_embed)  # Embed char length, MAX 6000
+            fields_built = len(kill_message_embed.fields)
+            inline_next_attacker_field = False
 
             # Find Killing Blow and add to the list first
             for a in kill['_embedded']['attackers']:
@@ -248,26 +248,29 @@ class Killboard(commands.Cog):
 
             # Validate the rest of the attackers
             for a in kill['_embedded']['attackers']:
-                current_atk_str = add_attacker_str(atk_saved_list, a) # Add a new Attackers info to the Saved list
+                current_atk_str = add_attacker_str(atk_saved_list, a)  # Add a new Attackers info to the Saved list
                 embed_length = len(kill_message_embed)  # Update current embed length
                 new_length = len(current_atk_str) + embed_length
 
-                if new_length >= 5900:  # Do we exceed the allowed Embed Length?
+                if new_length >= 5800:  # Do we exceed the allowed Embed Length?
                     # End early, build what we have and add 'too many attackers' field at the end of the embed
                     build_attacker_field(atk_saved_list, kill_message_embed, atk_field_name)
-                    add_too_many_attackers(kill_message_embed) #Costs 1 field + ~85 characters
+                    add_too_many_attackers(kill_message_embed)  # Costs 1 field + ~85 characters
+                    break
                 else:
                     current_field_length = len(atk_saved_list)  # Update current field length
                     new_field_length = current_field_length + len(current_atk_str)
                     # If adding this attacker is still below field char limit
-                    if(new_field_length <= 1024):  #  Does adding this attacker exceed allowed Field char Length?
-                        atk_saved_list = current_atk_str #Add this attacker to the Saved List
-                        if a == kill['_embedded']['attackers'][-1]: # If this is the last Attacker to validate, build Embed
+                    if (new_field_length <= 1024):  # Does adding this attacker exceed allowed Field char Length?
+                        atk_saved_list = current_atk_str  # Add this attacker to the Saved List
+                        if a == kill['_embedded']['attackers'][
+                            -1]:  # If this is the last Attacker to validate, build Embed
                             build_attacker_field(atk_saved_list, kill_message_embed, atk_field_name)
+
                     else:  # We exceeded the Field Length
-                        if len(kill_message_embed.fields) >= 23: # We exceeded the allowed amount of Fields
+                        if len(kill_message_embed.fields) >= 23:  # We exceeded the allowed amount of Fields
                             add_too_many_attackers(kill_message_embed)  # Costs 1 field + ~85 characters
-                        else: # We still have Fields to use, finish this Field and build a new one!
+                        else:  # We still have Fields to use, finish this Field and build a new one!
                             # Build field without adding latest attacker
                             build_attacker_field(atk_saved_list, kill_message_embed, atk_field_name)
                             atk_saved_list = ""  # Empty the list, since we just built a Full Field
