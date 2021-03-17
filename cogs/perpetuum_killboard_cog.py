@@ -98,6 +98,10 @@ def add_too_many_attackers(embed: discord.embeds):
     return embed
 
 
+def embed_linebreak():
+    return "\n ──────────────────── "
+
+
 # endregion Helper functions
 
 class Killboard(commands.Cog):
@@ -174,21 +178,14 @@ class Killboard(commands.Cog):
             kill_message_embed.set_footer(text="Happened on " + str(kill['date']))
 
             # Embed - Victim
-            kill_message_embed.add_field(name="Victim",
-                                         value=str(kill['_embedded']['agent']['name']) +
-                                               "\n**Corp**: " + str(kill['_embedded']['corporation']['name']),
-                                         inline=True)
-
-            kill_message_embed.add_field(name="🤖 Robot",
-                                         value=bot_name_lookup.get(kill['_embedded']['robot']['definition']),
-                                         inline=False)
-
-            kill_message_embed.add_field(name="🩹 Damage Taken",
-                                         value=prettier_numbers(kill['damageReceived']),
-                                         inline=True)
-
-            kill_message_embed.add_field(name="🗺️ Zone",
-                                         value=kill['_embedded']['zone']['name'],
+            kill_message_embed.add_field(name="Target",
+                                         value=str("🕵️ **Agent**: " + str(kill['_embedded']['agent']['name'])) +
+                                               "\n💠 **Corp**: " + str(kill['_embedded']['corporation']['name']) +
+                                               "\n🤖 **Robot**: " + bot_name_lookup.get(
+                                             kill['_embedded']['robot']['definition']) +
+                                               "\n🩹 **Damage Taken**: " + prettier_numbers(kill['damageReceived']) +
+                                               "\n🗺️ **Zone**: " + str(
+                                             kill['_embedded']['zone']['name']) + embed_linebreak(),
                                          inline=True)
 
             # Embed - Attacker(s)
