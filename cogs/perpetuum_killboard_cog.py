@@ -203,10 +203,7 @@ class Killboard(commands.Cog):
                                                url="https://killboard.openperpetuum.com/kill/" + str(kill['id']),
                                                color=discord.colour.Color.random())
             kill_message_embed.set_author(name="Killmail #" + str(kill['id']),
-                                          url="https://api.openperpetuum.com/killboard/kill/" + str(kill['id']),
-                                          icon_url="http://clipart-library.com/img/831510.png")  # TODO: Decide on icon
-            # kill_message_embed.set_thumbnail(
-            #     url="http://clipart-library.com/img/831510.png")  # TODO: Fetch Victims robot picture, or Corp icons?
+                                          url="https://api.openperpetuum.com/killboard/kill/" + str(kill['id']))
 
             kill_message_embed.set_footer(text="Happened on " + str(kill['date']))
 
@@ -244,6 +241,10 @@ class Killboard(commands.Cog):
                 if a["hasKillingBlow"]:
                     atk_saved_list = add_attacker_str(atk_saved_list, a)
                     kill['_embedded']['attackers'].remove(a)  # Attacker has now been added, remove it from list
+                    # Edge case, if there is only 1 attacker total we want to post the message
+                    if a == kill['_embedded']['attackers'][-1]:
+                        build_attacker_field(atk_saved_list, kill_message_embed, atk_field_name)
+
                     break
 
             # Validate the rest of the attackers
