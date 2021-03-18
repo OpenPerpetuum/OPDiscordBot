@@ -207,7 +207,7 @@ class Killboard(commands.Cog):
 
             kill_message_embed.set_footer(text="Happened on " + str(kill['date']))
 
-            # Embed - Victim
+            # Embed - Target
             kill_message_embed.add_field(name="Target",
                                          value=str("🕵️ **Agent**: " + str(kill['_embedded']['agent']['name'])) +
                                                "\n💠 **Corp**: " + str(kill['_embedded']['corporation']['name']) +
@@ -218,10 +218,8 @@ class Killboard(commands.Cog):
                                              kill['_embedded']['zone']['name']) + embed_linebreak(),
                                          inline=False)
 
-            # Embed - Attacker(s)
-            # Note that Discord Embeds has a hard-limit on 25 fields
-            # Killmail that would exceed that 25 limit: https://api.openperpetuum.com/killboard/kill/2720
-            # More info on embed limits: https://discordjs.guide/popular-topics/embeds.html#embed-limits
+            # Embed - Attacker(s) |
+            # Discord has some limitations when it comes to Embeds: https://discordjs.guide/popular-topics/embeds.html#embed-limits
 
             # Setup for Attacker Field(s) for Embed
             atk_field_name = "⚔ Attackers"
@@ -231,9 +229,9 @@ class Killboard(commands.Cog):
 
             atk_saved_list = ""  # Validated Attackers, saved to a list - These WILL exist in the embed
             current_atk_str = ""  # Validated Attackers + New Attacker we want to add - Check if this exceeds limits
-            current_field_length = 0  # Length of field we're currently manipulating
+            current_field_length = 0  # char-length of field we're currently manipulating
             embed_length = len(kill_message_embed)  # Embed char length, MAX 6000
-            fields_built = len(kill_message_embed.fields)
+            fields_built = len(kill_message_embed.fields) # Keep track of total fields, MAX 25
             inline_next_attacker_field = False
 
             # Find Killing Blow and add to the list first
@@ -241,10 +239,9 @@ class Killboard(commands.Cog):
                 if a["hasKillingBlow"]:
                     atk_saved_list = add_attacker_str(atk_saved_list, a)
                     kill['_embedded']['attackers'].remove(a)  # Attacker has now been added, remove it from list
-                    # Edge case, if there is only 1 attacker total we want to post the message
-                    if a == kill['_embedded']['attackers'][-1]:
+                    # Edge case, if there was only 1 attacker in total, we want to post the message
+                    if len(kill['_embedded']['attackers']) == 0:
                         build_attacker_field(atk_saved_list, kill_message_embed, atk_field_name)
-
                     break
 
             # Validate the rest of the attackers
@@ -264,8 +261,8 @@ class Killboard(commands.Cog):
                     # If adding this attacker is still below field char limit
                     if (new_field_length <= 1024):  # Does adding this attacker exceed allowed Field char Length?
                         atk_saved_list = current_atk_str  # Add this attacker to the Saved List
-                        if a == kill['_embedded']['attackers'][
-                            -1]:  # If this is the last Attacker to validate, build Embed
+                        # If this is the last Attacker to validate, build Embed
+                        if a == kill['_embedded']['attackers'][-1]:
                             build_attacker_field(atk_saved_list, kill_message_embed, atk_field_name)
 
                     else:  # We exceeded the Field Length
