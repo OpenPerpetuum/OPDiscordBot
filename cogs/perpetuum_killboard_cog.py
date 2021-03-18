@@ -54,43 +54,6 @@ def prettier_numbers(number: int):
     return pretty[0]
 
 
-def add_attacker(embed: discord.embeds, a: json):
-    if a["hasKillingBlow"]:
-        embed.add_field(name="⚔ Attacker - 🩸 Killing Blow! 🩸",
-                        value=a['_embedded']['agent']['name'] +
-                              "\n**Corp**: " + a['_embedded']['corporation']['name'],
-                        inline=False)
-    else:
-        embed.add_field(name="⚔ Attacker",
-                        value=a['_embedded']['agent']['name'] +
-                              "\n**Corp**: " + a['_embedded']['corporation']['name'],
-                        inline=False)
-
-    embed.add_field(name="🤖 Robot",
-                    value=bot_name_lookup.get(a['_embedded']['robot']['definition']),
-                    inline=True)
-
-    embed.add_field(name="🗡️ Damage dealt",
-                    value=prettier_numbers(a['damageDealt']),
-                    inline=True)
-
-    if int(a['totalEcmAttempts']) > 0:
-        embed.add_field(name="ECM Attempts",
-                        value=a['totalEcmAttempts'],
-                        inline=True)
-
-    if int(a['sensorSuppressions']) > 0:
-        embed.add_field(name="Sensor Supressions",
-                        value=a['sensorSuppressions'],
-                        inline=True)
-
-    if float(a['energyDispersed']) > 0:
-        embed.add_field(name="Energy Drained",
-                        value=prettier_numbers(a['energyDispersed']),
-                        inline=True)
-    return embed
-
-
 def add_attacker_str(atk_saved_str: str, atk_to_add: json):
     if atk_to_add["hasKillingBlow"]:
         atk_saved_str = atk_saved_str + (
