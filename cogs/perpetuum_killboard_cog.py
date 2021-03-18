@@ -181,20 +181,20 @@ class Killboard(commands.Cog):
                                              kill['_embedded']['zone']['name']) + embed_linebreak(),
                                          inline=False)
 
-            # Embed - Attacker(s) |
-            # Discord has some limitations when it comes to Embeds: https://discordjs.guide/popular-topics/embeds.html#embed-limits
+            # Embed - Attacker(s) | Discord has some limitations when it comes to Embeds
+            # More info: https://discordjs.guide/popular-topics/embeds.html#embed-limits
 
             # Setup for Attacker Field(s) for Embed
             atk_field_name = "⚔ Attackers"
             atkcount = (str(len(kill['_embedded']['attackers'])))
-            if (int(atkcount) <= 1):  # If there's only 1 attacker, change field name to singular.
+            if int(atkcount) <= 1:  # If there's only 1 attacker, change field name to singular.
                 atk_field_name = "⚔ Attacker"
 
             atk_saved_list = ""  # Validated Attackers, saved to a list - These WILL exist in the embed
             current_atk_str = ""  # Validated Attackers + New Attacker we want to add - Check if this exceeds limits
             current_field_length = 0  # char-length of field we're currently manipulating
             embed_length = len(kill_message_embed)  # Embed char length, MAX 6000
-            fields_built = len(kill_message_embed.fields) # Keep track of total fields, MAX 25
+            fields_built = len(kill_message_embed.fields)  # Keep track of total fields, MAX 25
             inline_next_attacker_field = False
 
             # Find Killing Blow and add to the list first
