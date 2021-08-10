@@ -160,7 +160,6 @@ class Killboard(commands.Cog):
 
         # Iterate over each new killmail
         for kill in new_killmails:
-
             # Embed Setup
             kill_message_embed = discord.Embed(title="Killboard Link",
                                                url="https://killboard.openperpetuum.com/kill/" + str(kill['id']),
@@ -175,7 +174,7 @@ class Killboard(commands.Cog):
                                          value=str("🕵️ **Agent**: " + str(kill['_embedded']['agent']['name'])) +
                                                "\n💠 **Corp**: " + str(kill['_embedded']['corporation']['name']) +
                                                "\n🤖 **Robot**: " + bot_name_lookup.get(
-                                             kill['_embedded']['robot']['definition']) +
+                                             kill['_embedded']['robot']['definition'], kill['_embedded']['robot']['definition']) +
                                                "\n🩹 **Damage Taken**: " + prettier_numbers(kill['damageReceived']) +
                                                "\n🗺️ **Zone**: " + str(
                                              kill['_embedded']['zone']['name']) + embed_linebreak(),
