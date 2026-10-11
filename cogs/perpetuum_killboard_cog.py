@@ -63,7 +63,7 @@ def add_attacker_str(atk_saved_str: str, atk_to_add: json):
 
     atk_saved_str = atk_saved_str + ("\n💠 **Corp**: " + str(atk_to_add['_embedded']['corporation']['name']) +
                                      "\n🤖 **Robot**: " + bot_name_lookup.get(
-                atk_to_add['_embedded']['robot']['definition']) +
+                atk_to_add['_embedded']['robot']['definition'], atk_to_add['_embedded']['robot']['definition']) +
                                      "\n🗡️ **Damage Done**: " + str(prettier_numbers(atk_to_add['damageDealt'])))
 
     if int(atk_to_add['totalEcmAttempts']) > 0:
