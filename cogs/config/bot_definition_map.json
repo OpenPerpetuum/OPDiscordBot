@@ -113,5 +113,7 @@
 	"def_beholder_bot": "Beholder",
 	"def_beholder_bot_pr": "Beholder prototype",
 	"def_ares_bot": "Ares",
-	"def_ares_bot_pr": "Ares prototype"
+    "def_ares_bot_pr": "Ares prototype",
+    "def_weasel_arbalest_mk3_bot": "\"Weasel\" Arbalest Mk3",
+    "def_archer_gropho_mk3_bot": "\"Archer\" Gropho Mk3"
 }
