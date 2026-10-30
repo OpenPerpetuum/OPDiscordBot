@@ -102,5 +102,18 @@
 	"def_hydra_bot" : "Hydra",
 	"def_hydra_bot_pr" : "Hydra prototype",
 	"def_onyx_bot" : "Onyx",
-	"def_onyx_bot_pr" : "Onyx prototype"
+	"def_onyx_bot_pr" : "Onyx prototype",
+	"def_spectator_bot" : "Spectator",
+	"def_spectator_bot_pr" : "Spectator prototype",
+	"def_gropho_reward1_bot" : "Praetorian Gropho",
+	"def_seth_reward1_bot" : "Mercenary Seth",
+	"def_mesmer_reward1_bot" : "Vanguard Mesmer",
+	"def_terramotus_bot" : "Terramotus",
+	"def_terramotus_bot_pr" : "Terramotus prototype",
+	"def_beholder_bot": "Beholder",
+	"def_beholder_bot_pr": "Beholder prototype",
+	"def_ares_bot": "Ares",
+    "def_ares_bot_pr": "Ares prototype",
+    "def_weasel_arbalest_mk3_bot": "\"Weasel\" Arbalest Mk3",
+    "def_archer_gropho_mk3_bot": "\"Archer\" Gropho Mk3"
 }
